@@ -15,6 +15,9 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
 
+-record(state, {socket,
+                buffer}).
+
 %% ------------------------------------------------------------------
 %% API Function Definitions
 %% ------------------------------------------------------------------
@@ -28,7 +31,8 @@ start_link(Socket) ->
 
 init([Socket]) ->
     gen_tcp:send(Socket, <<"hello">>),
-    {ok, Socket}.
+    {ok, #state{socket = Socket,
+                buffer = []}}.
 
 handle_call(_Request, _From, State) ->
     {reply, ok, State}.
@@ -39,9 +43,11 @@ handle_cast(_Msg, State) ->
 handle_info({tcp_closed, _Socket}, State) ->
     {stop, normal, State};
 
-handle_info({tcp, _Socket, Bin}, State) ->
-    io:format("~p~n", [Bin]),
-    {noreply, State};
+handle_info({tcp, _Socket, Bin}, 
+                    State = #state{buffer = Buffer}) ->
+    NewBuffer = [Bin | Buffer],
+    io:format("Buffer:~p~n", [NewBuffer]),
+    {noreply, State#state{buffer = NewBuffer}};
 
 handle_info(_Info, State) ->
     io:format("unknown:~p~n", [_Info]),
