@@ -1,0 +1,10 @@
+*~
+*.swp
+*.bak
+tags
+*.beam
+*.app
+*.dump
+ebin/
+log/
+deps/

@@ -1,0 +1,12 @@
+{application, joy_console,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { joy_console_app, []}},
+  {env, []}
+ ]}.
