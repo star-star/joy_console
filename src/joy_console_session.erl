@@ -26,7 +26,8 @@ start_link(Socket) ->
 %% gen_server Function Definitions
 %% ------------------------------------------------------------------
 
-init(Socket) ->
+init([Socket]) ->
+    gen_tcp:send(Socket, <<"hello">>),
     {ok, Socket}.
 
 handle_call(_Request, _From, State) ->
@@ -35,10 +36,19 @@ handle_call(_Request, _From, State) ->
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
+handle_info({tcp_closed, _Socket}, State) ->
+    {stop, normal, State};
+
+handle_info({tcp, _Socket, Bin}, State) ->
+    io:format("~p~n", [Bin]),
+    {noreply, State};
+
 handle_info(_Info, State) ->
+    io:format("unknown:~p~n", [_Info]),
     {noreply, State}.
 
 terminate(_Reason, _State) ->
+    io:format("session closed~n"),
     ok.
 
 code_change(_OldVsn, State, _Extra) ->

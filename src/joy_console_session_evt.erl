@@ -13,4 +13,4 @@ on_stop(_Port) ->
 
 on_connected(Socket) ->
     {ok, Pid} = joy_console_session_sup:start_child(Socket),
-    gen_tcp:controlling_process(Socket, Pid).
+    ok = gen_tcp:controlling_process(Socket, Pid).

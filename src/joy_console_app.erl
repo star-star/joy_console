@@ -22,4 +22,5 @@ stop(_State) ->
 
 
 init_port(Port) ->
-    joy_net:start_tcp_listener(Port, joy_console_session_evt, []).
+    joy_net:start_tcp_listener(Port, joy_console_session_evt, [{active, true},
+                                                               {packet_size, 0}]).
