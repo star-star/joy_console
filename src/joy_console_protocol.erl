@@ -15,7 +15,7 @@ start_link(ListenerPid, Socket, Transport, Opts) ->
 
 init(ListenerPid, Socket, Transport, _Opts = []) ->
 	ok = ranch:accept_ack(ListenerPid),
-    Transport:send(Socket, <<"Welcome!\r\n">>),
+    Transport:send(Socket, <<"Welcome!\r\n>>>">>),
     loop(<<>>, #state{listenerPid = ListenerPid,
                       socket      = Socket,
                       transport   = Transport}).
@@ -23,9 +23,10 @@ init(ListenerPid, Socket, Transport, _Opts = []) ->
 
 loop(Buffer, State = #state{socket    = Socket,
                             transport = Transport}) ->
-	case Transport:recv(Socket, 0, 5000) of
+	case Transport:recv(Socket, 0, 30000) of
 		{ok, Data} ->
-            NewBuffer = parse_cmd_line(<<Buffer/binary, Data/binary>>), 
+            {Res, NewBuffer} = parse_cmd_line(<<Buffer/binary, Data/binary>>), 
+            Res =:= yes andalso Transport:send(Socket, <<">>>">>),
 			loop(NewBuffer, State);
 		_ ->
             Transport:send(Socket, <<"Bye!">>),
@@ -34,14 +35,14 @@ loop(Buffer, State = #state{socket    = Socket,
 
 
 parse_cmd_line(Buffer) ->
-    lager:info("buffer:~p", [Buffer]),
+    %lager:info("buffer:~p", [Buffer]),
     case binary:match(Buffer, <<"\r\n">>) of
         nomatch ->
-            Buffer;
+            {no,Buffer};
         {_, _} ->
             [Cmd, NewBuffer] = binary:split(Buffer, <<"\r\n">>),
-            lager:info("ori:~p cmd:~p buffer:~p", [Buffer, Cmd, NewBuffer]),
-            NewBuffer
+            joy_console_syntax_rpc:parse(Cmd),
+            {yes, NewBuffer}
 
     end.
 
